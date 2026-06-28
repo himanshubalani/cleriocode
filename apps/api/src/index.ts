@@ -16,34 +16,34 @@ app.use("/trpc",
 })
 );
 
-// app.get("/", (req, res) => {
-// 	return res.json({
-// 		message: "Hello Spiderman",
-// });
-// });
+app.get("/", (req, res) => {
+	return res.json({
+		message: "Hello Spiderman",
+	});
+});
 
-// app.post("/users", (req, res) => {
-// 	const result = createUserSchema.safeParse(req.body);
+app.post("/users", (req, res) => {
+	const result = createUserSchema.safeParse(req.body);
 
-// 	if (!result.success) {
-// 		const message = result.error.issues
-// 		.map((issue) => issue.message)
-// 		.join(",");
+	if (!result.success) {
+		const message = result.error.issues
+			.map((issue) => issue.message)
+			.join(", ");
 
-// 		return res.status(400).json({
-// 			success: false,
-// 			message: "Invalid input",
-// 		});
-// 	}
+		return res.status(400).json({
+			success: false,
+			message: "Invalid input",
+		});
+	}
 
-// 	console.log(result.data);
+	console.log("Created user:", result.data);
 
-// 	return res.json({
-// 		success: true,
-// 		message: "User created",
-// 	})
-// })
-
+	return res.status(201).json({
+		success: true,
+		message: "User created",
+		user: result.data,
+	});
+});
 const PORT = 5000
 app.listen(PORT, () => {
 	console.log(`Server runnng at port: ${PORT}`);
