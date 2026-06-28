@@ -1,0 +1,19 @@
+{
+  "name": "@cleriocode/utils",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+    "scripts": {
+      "dev": "tsc --watch",
+      "build": "tsc"
+  },
+  "packageManager": "pnpm@11.8.0",
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}

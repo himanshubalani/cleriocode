@@ -1,0 +1,14 @@
+{
+  "name": "cleriocode",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build"
+  },
+  "packageManager": "pnpm@11.8.0",
+  "type": "module",
+  "devDependencies": {
+    "prettier": "^3.8.4",
+    "turbo": "^2.10.0"
+  }
+}
