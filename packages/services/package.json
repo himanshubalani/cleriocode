@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@cleriocode/db": "workspace:*",
+    "@cleriocode/github": "workspace:*",
     "@cleriocode/utils": "workspace:*"
   },
   "devDependencies": {

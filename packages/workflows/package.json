@@ -1,0 +1,22 @@
+{
+  "name": "@cleriocode/workflows",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "inngest": "^3.29.0",
+    "@cleriocode/ai": "workspace:*",
+    "@cleriocode/github": "workspace:*",
+    "@cleriocode/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "typescript": "^6.0.3"
+  }
+}

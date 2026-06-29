@@ -5,6 +5,7 @@ import { auth } from "@cleriocode/auth";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter, createContext } from "@cleriocode/trpc";
 import { createUserSchema } from "@cleriocode/utils";
+import { githubWebhookHandler } from "./webhooks/github.js";
 
 const app = express();
 
@@ -29,6 +30,9 @@ app.use(
     createContext,
   })
 );
+
+// GitHub webhook handler
+app.post("/webhooks/github", githubWebhookHandler);
 
 app.get("/", (req, res) => {
   return res.json({

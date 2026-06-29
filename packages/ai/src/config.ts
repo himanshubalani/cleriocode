@@ -6,4 +6,4 @@ export const openrouter = createOpenRouter({
 });
 
 // Default model for all AI operations
-export const DEFAULT_MODEL = "anthropic/claude-sonnet-4";
+export const DEFAULT_MODEL = "openrouter/owl-alpha";
