@@ -1,8 +1,15 @@
 import { inngest } from "../client.js";
-import { fetchPRDiff, postReviewComments } from "@cleriocode/github";
-import { generateCodeReview } from "@cleriocode/ai";
-import type { ReviewComment } from "@cleriocode/ai";
+import { postReviewComments } from "@cleriocode/github";
+import {
+  generateContextReview,
+  chunkPrFiles,
+  buildPrNamespace,
+  buildRepoNamespace,
+  saveChunksToPinecone,
+  searchPrContext,
+} from "@cleriocode/ai";
 import { prisma } from "@cleriocode/db";
+import { fetchPRFiles } from "./helpers/fetch-pr-files.js";
 
 export const aiReviewWorkflow = inngest.createFunction(
   { id: "ai-review", retries: 3 },
@@ -24,12 +31,14 @@ export const aiReviewWorkflow = inngest.createFunction(
       return { status: "skipped", reason: "no_credits" };
     }
 
-    // Step 2: Create pending review record
-    const reviewId = await step.run("create-pending-review", async () => {
-      const pr = await prisma.pullRequest.findUniqueOrThrow({
+    // Step 2: Mark PR as processing + create pending review
+    const { reviewId, title } = await step.run("mark-processing", async () => {
+      const pr = await prisma.pullRequest.update({
         where: { id: pullRequestId },
-        select: { headSha: true },
+        data: { status: "processing" },
+        select: { headSha: true, title: true },
       });
+
       const review = await prisma.aIReview.create({
         data: {
           status: "in_progress",
@@ -38,35 +47,88 @@ export const aiReviewWorkflow = inngest.createFunction(
           reviewedCommitSha: pr.headSha,
         },
       });
-      return review.id;
+
+      return { reviewId: review.id, title: pr.title };
     });
 
-    // Step 3: Fetch diff
-    const diff = await step.run("fetch-diff", async () => {
-      return fetchPRDiff(installationId, owner, repo, prNumber);
+    // Step 3: Fetch PR files and chunk them
+    const chunks = await step.run("fetch-and-chunk-diff", async () => {
+      const files = await fetchPRFiles(installationId, owner, repo, prNumber);
+      return chunkPrFiles(prNumber, files);
     });
 
-    // Step 4: Generate review
-    const review = await step.run("generate-review", async () => {
-      return generateCodeReview(diff);
+    // Early exit if no code changes
+    if (chunks.length === 0) {
+      await step.run("mark-reviewed-no-code", async () => {
+        await prisma.aIReview.update({
+          where: { id: reviewId },
+          data: { status: "passed", summary: "No code changes to review." },
+        });
+        await prisma.pullRequest.update({
+          where: { id: pullRequestId },
+          data: { status: "reviewed" },
+        });
+      });
+      return { status: "completed", reviewId, reason: "no_code_changes" };
+    }
+
+    // Step 4: Save chunks to Pinecone (PR namespace)
+    const repoFullName = `${owner}/${repo}`;
+    const namespace = buildPrNamespace(repoFullName, prNumber);
+
+    await step.run("save-vectors-to-pinecone", async () => {
+      await saveChunksToPinecone(namespace, chunks);
     });
 
-    // Step 5: Persist review + post to GitHub + decrement credits
-    await step.run("persist-and-post", async () => {
-      const status = review.overallStatus === "passed" ? "passed" : "completed";
+    // Step 5: Wait for Pinecone to index vectors
+    await step.sleep("wait-for-vectors-to-index", "10s");
 
+    // Step 6: Search repo-wide context (if codebase is synced)
+    const repoContextSnippets = await step.run("search-repo-context", async () => {
+      const repoSync = await prisma.repoSync.findUnique({
+        where: { repoFullName },
+      });
+
+      if (!repoSync || repoSync.status !== "synced") {
+        return [];
+      }
+
+      const repoNamespace = buildRepoNamespace(repoFullName);
+      return searchPrContext(repoNamespace, title);
+    });
+
+    // Step 7: Search PR context + generate AI review
+    const reviewText = await step.run("generate-ai-review", async () => {
+      const contextSnippets = await searchPrContext(namespace, title);
+
+      return generateContextReview({
+        repoFullName,
+        title,
+        contextSnippets,
+        repoContextSnippets,
+      });
+    });
+
+    // Step 8: Post comment to GitHub + persist + decrement credits
+    await step.run("post-and-persist", async () => {
+      // Post review to GitHub
+      await postReviewComments(installationId, owner, repo, prNumber, reviewText);
+
+      // Persist review
       await prisma.aIReview.update({
         where: { id: reviewId },
         data: {
-          status,
-          comments: JSON.parse(JSON.stringify(review.comments)),
-          summary: review.summary,
+          status: "completed",
+          summary: reviewText,
+          comments: [],
         },
       });
 
-      // Post to GitHub
-      const commentBody = formatReviewComment(review.summary, review.comments);
-      await postReviewComments(installationId, owner, repo, prNumber, commentBody);
+      // Mark PR as reviewed
+      await prisma.pullRequest.update({
+        where: { id: pullRequestId },
+        data: { status: "reviewed" },
+      });
 
       // Decrement credits
       await prisma.workspace.update({
@@ -88,25 +150,3 @@ export const aiReviewWorkflow = inngest.createFunction(
     return { status: "completed", reviewId };
   }
 );
-
-function formatReviewComment(summary: string, comments: ReviewComment[]): string {
-  let body = `## 🤖 AI Code Review\n\n${summary}\n\n`;
-
-  if (comments.length === 0) {
-    body += "✅ No issues found. Code looks good!\n";
-  } else {
-    body += "### Issues Found\n\n";
-    for (const comment of comments) {
-      const icon =
-        comment.severity === "critical"
-          ? "🔴"
-          : comment.severity === "warning"
-            ? "🟡"
-            : "🔵";
-      body += `${icon} **[${comment.severity}]** \`${comment.file}${comment.line ? `:${comment.line}` : ""}\`\n`;
-      body += `  ${comment.message}\n\n`;
-    }
-  }
-
-  return body;
-}

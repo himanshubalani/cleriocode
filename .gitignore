@@ -7,6 +7,11 @@ node_modules/
 **/.next/
 **/out/
 
+# Ignore build outputs in the root and all subpackages
+dist/
+build/
+
+
 # tRPC & Build Artifacts
 **/dist/
 **/build/

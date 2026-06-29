@@ -3,6 +3,9 @@ import { z } from "zod";
 import {
   connectRepository,
   listRepositories,
+  triggerRepoSync,
+  getRepoSyncStatuses,
+  getRepoSyncStatus,
   DomainError,
 } from "@cleriocode/services";
 import { router, workspaceProcedure } from "../trpc.js";
@@ -76,5 +79,57 @@ export const repositoryRouter = router({
       } catch (err) {
         mapDomainError(err);
       }
+    }),
+
+  /**
+   * Triggers a codebase sync for a repository (indexes into Pinecone).
+   */
+  syncCodebase: workspaceProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().min(1),
+        repoFullName: z.string().min(1),
+        installationId: z.number().int().positive(),
+        branch: z.string().default("main"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await triggerRepoSync(
+          input.installationId,
+          input.repoFullName,
+          input.branch
+        );
+      } catch (err) {
+        mapDomainError(err);
+      }
+    }),
+
+  /**
+   * Gets sync status for a single repository.
+   */
+  getSyncStatus: workspaceProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().min(1),
+        repoFullName: z.string().min(1),
+      })
+    )
+    .query(async ({ input }) => {
+      return await getRepoSyncStatus(input.repoFullName);
+    }),
+
+  /**
+   * Gets sync statuses for multiple repositories.
+   */
+  getSyncStatuses: workspaceProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().min(1),
+        repoFullNames: z.array(z.string().min(1)),
+      })
+    )
+    .query(async ({ input }) => {
+      return await getRepoSyncStatuses(input.repoFullNames);
     }),
 });

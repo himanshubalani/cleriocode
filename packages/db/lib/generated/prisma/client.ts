@@ -121,3 +121,8 @@ export type Subscription = Prisma.SubscriptionModel
  * 
  */
 export type ReviewCreditLedger = Prisma.ReviewCreditLedgerModel
+/**
+ * Model RepoSync
+ * 
+ */
+export type RepoSync = Prisma.RepoSyncModel

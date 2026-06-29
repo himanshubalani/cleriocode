@@ -10,8 +10,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "ai": "^4.3.0",
     "@openrouter/ai-sdk-provider": "^0.4.3",
+    "@pinecone-database/pinecone": "^8.0.0",
+    "ai": "^4.3.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {

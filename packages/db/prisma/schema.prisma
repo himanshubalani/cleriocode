@@ -270,3 +270,20 @@ model ReviewCreditLedger {
   @@index([workspaceId])
   @@map("review_credit_ledger")
 }
+
+// ─── Repo Sync (Codebase Context for AI Reviews) ───
+
+model RepoSync {
+  id             String    @id @default(cuid())
+  repoFullName   String    @unique
+  installationId Int
+  branch         String    @default("main")
+  status         String    @default("pending")
+  chunkCount     Int?
+  syncedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+  @@map("repo_sync")
+}

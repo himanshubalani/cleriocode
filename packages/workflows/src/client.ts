@@ -46,6 +46,11 @@ export type InngestEvents = {
       workspaceId: string;
     };
   };
+  "repo/sync.requested": {
+    data: {
+      repoSyncId: string;
+    };
+  };
 };
 
 /**

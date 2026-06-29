@@ -399,7 +399,8 @@ export const ModelName = {
   AIReview: 'AIReview',
   Release: 'Release',
   Subscription: 'Subscription',
-  ReviewCreditLedger: 'ReviewCreditLedger'
+  ReviewCreditLedger: 'ReviewCreditLedger',
+  RepoSync: 'RepoSync'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -415,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "workspace" | "workspaceMember" | "project" | "featureRequest" | "pRD" | "task" | "repository" | "pullRequest" | "aIReview" | "release" | "subscription" | "reviewCreditLedger"
+    modelProps: "user" | "session" | "account" | "verification" | "workspace" | "workspaceMember" | "project" | "featureRequest" | "pRD" | "task" | "repository" | "pullRequest" | "aIReview" | "release" | "subscription" | "reviewCreditLedger" | "repoSync"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1603,6 +1604,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RepoSync: {
+      payload: Prisma.$RepoSyncPayload<ExtArgs>
+      fields: Prisma.RepoSyncFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RepoSyncFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RepoSyncFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>
+        }
+        findFirst: {
+          args: Prisma.RepoSyncFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RepoSyncFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>
+        }
+        findMany: {
+          args: Prisma.RepoSyncFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>[]
+        }
+        create: {
+          args: Prisma.RepoSyncCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>
+        }
+        createMany: {
+          args: Prisma.RepoSyncCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RepoSyncCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>[]
+        }
+        delete: {
+          args: Prisma.RepoSyncDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>
+        }
+        update: {
+          args: Prisma.RepoSyncUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>
+        }
+        deleteMany: {
+          args: Prisma.RepoSyncDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RepoSyncUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RepoSyncUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>[]
+        }
+        upsert: {
+          args: Prisma.RepoSyncUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RepoSyncPayload>
+        }
+        aggregate: {
+          args: Prisma.RepoSyncAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRepoSync>
+        }
+        groupBy: {
+          args: Prisma.RepoSyncGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RepoSyncGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RepoSyncCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RepoSyncCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1862,6 +1937,21 @@ export const ReviewCreditLedgerScalarFieldEnum = {
 export type ReviewCreditLedgerScalarFieldEnum = (typeof ReviewCreditLedgerScalarFieldEnum)[keyof typeof ReviewCreditLedgerScalarFieldEnum]
 
 
+export const RepoSyncScalarFieldEnum = {
+  id: 'id',
+  repoFullName: 'repoFullName',
+  installationId: 'installationId',
+  branch: 'branch',
+  status: 'status',
+  chunkCount: 'chunkCount',
+  syncedAt: 'syncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RepoSyncScalarFieldEnum = (typeof RepoSyncScalarFieldEnum)[keyof typeof RepoSyncScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2110,6 +2200,7 @@ export type GlobalOmitConfig = {
   release?: Prisma.ReleaseOmit
   subscription?: Prisma.SubscriptionOmit
   reviewCreditLedger?: Prisma.ReviewCreditLedgerOmit
+  repoSync?: Prisma.RepoSyncOmit
 }
 
 /* Types for Logging */

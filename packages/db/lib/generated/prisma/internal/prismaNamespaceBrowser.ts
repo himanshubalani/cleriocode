@@ -66,7 +66,8 @@ export const ModelName = {
   AIReview: 'AIReview',
   Release: 'Release',
   Subscription: 'Subscription',
-  ReviewCreditLedger: 'ReviewCreditLedger'
+  ReviewCreditLedger: 'ReviewCreditLedger',
+  RepoSync: 'RepoSync'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -303,6 +304,21 @@ export const ReviewCreditLedgerScalarFieldEnum = {
 } as const
 
 export type ReviewCreditLedgerScalarFieldEnum = (typeof ReviewCreditLedgerScalarFieldEnum)[keyof typeof ReviewCreditLedgerScalarFieldEnum]
+
+
+export const RepoSyncScalarFieldEnum = {
+  id: 'id',
+  repoFullName: 'repoFullName',
+  installationId: 'installationId',
+  branch: 'branch',
+  status: 'status',
+  chunkCount: 'chunkCount',
+  syncedAt: 'syncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RepoSyncScalarFieldEnum = (typeof RepoSyncScalarFieldEnum)[keyof typeof RepoSyncScalarFieldEnum]
 
 
 export const SortOrder = {

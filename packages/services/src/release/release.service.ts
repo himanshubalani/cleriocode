@@ -88,7 +88,7 @@ export async function approveRelease(
 
   const openPRs = repositories.flatMap((r) => r.pullRequests);
   const failedPRs = openPRs.filter(
-    (pr) => pr.reviews.length === 0 || pr.reviews[0].status !== "passed"
+    (pr) => pr.reviews.length === 0 || pr.reviews[0]?.status !== "passed"
   );
 
   if (openPRs.length > 0 && failedPRs.length > 0) {
