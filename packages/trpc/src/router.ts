@@ -6,7 +6,7 @@ export const appRouter = router({
 		return {
 			message: "Hello, I am Working, trpc"
 		}
-	})
+	}),
 	  github: githubRouter,
 });
 

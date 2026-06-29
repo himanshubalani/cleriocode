@@ -1,3 +1,6 @@
 export * from "./errors.js";
-
-// Future domain services will be added here
+export * from "./workspace/index.js";
+export * from "./project/index.js";
+export * from "./feature-request/index.js";
+export * from "./prd/index.js";
+export * from "./task/index.js";
