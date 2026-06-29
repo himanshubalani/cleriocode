@@ -1,6 +1,7 @@
 node_modules/
 .pnpm-store/
 .turbo
+*.pem
 
 # Next.js Build Outputs (Applies across all apps)
 **/.next/
