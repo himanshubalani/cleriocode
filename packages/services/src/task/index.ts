@@ -1,1 +1,1 @@
-export { listTasks, updateTaskStatus, triggerTaskGeneration } from "./task.service.js";
+export { listTasks, listTasksByProject, updateTaskStatus, triggerTaskGeneration } from "./task.service.js";

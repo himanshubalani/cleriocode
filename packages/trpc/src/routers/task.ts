@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { router, workspaceProcedure } from "../trpc.js";
 import {
   listTasks,
+  listTasksByProject,
   updateTaskStatus,
   triggerTaskGeneration,
   DomainError,
@@ -26,6 +27,40 @@ export const taskRouter = router({
           status: task.status,
           complexity: task.complexity,
           order: task.order,
+        }));
+      } catch (error) {
+        if (error instanceof DomainError) {
+          throw new TRPCError({
+            code: error.code === "NOT_FOUND" ? "NOT_FOUND" : "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+        throw error;
+      }
+    }),
+
+  listByProject: workspaceProcedure
+    .input(
+      z.object({
+        workspaceId: z.string(),
+        projectId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const results = await listTasksByProject(
+          input.projectId,
+          ctx.workspaceId
+        );
+        return results.map((task) => ({
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          complexity: task.complexity,
+          order: task.order,
+          prdId: task.prdId,
+          featureTitle: task.featureTitle,
         }));
       } catch (error) {
         if (error instanceof DomainError) {

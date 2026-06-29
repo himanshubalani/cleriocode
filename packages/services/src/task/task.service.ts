@@ -5,6 +5,56 @@ const VALID_STATUSES = ["todo", "in_progress", "in_review", "done"] as const;
 type TaskStatus = (typeof VALID_STATUSES)[number];
 
 /**
+ * Lists all tasks for a project (across all PRDs) with workspace isolation.
+ * Queries through FeatureRequest → PRD → Task chain.
+ */
+export async function listTasksByProject(
+  projectId: string,
+  workspaceId: string
+) {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project || project.workspaceId !== workspaceId) {
+    throw new NotFoundError("Project", projectId);
+  }
+
+  const tasks = await prisma.task.findMany({
+    where: {
+      prd: {
+        featureRequest: {
+          projectId,
+        },
+      },
+    },
+    include: {
+      prd: {
+        select: {
+          featureRequest: {
+            select: { title: true },
+          },
+        },
+      },
+    },
+    orderBy: { order: "asc" },
+  });
+
+  return tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    status: task.status,
+    complexity: task.complexity,
+    order: task.order,
+    prdId: task.prdId,
+    featureTitle: task.prd.featureRequest.title,
+    createdAt: task.createdAt,
+    updatedAt: task.updatedAt,
+  }));
+}
+
+/**
  * Lists all tasks for a PRD with workspace isolation.
  * Verifies PRD ownership through FeatureRequest → Project → Workspace chain.
  */
