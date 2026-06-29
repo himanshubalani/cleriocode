@@ -43,8 +43,9 @@ export const authedProcedure = t.procedure.use(isAuthed);
 export const protectedProcedure = authedProcedure;
 
 // 3. Workspace middleware — validates user membership in the target workspace or throws FORBIDDEN
-const hasWorkspace = t.middleware(async ({ ctx, next, rawInput }) => {
+const hasWorkspace = t.middleware(async ({ ctx, next, getRawInput }) => {
   // Extract workspaceId from input — workspace-scoped procedures receive workspaceId as part of the input
+  const rawInput = await getRawInput();
   const input = rawInput as { workspaceId?: string } | undefined;
   const workspaceId = input?.workspaceId;
 

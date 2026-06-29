@@ -33,7 +33,7 @@ export async function createProject(
   const project = await prisma.project.create({
     data: {
       name: input.name,
-      description: input.description,
+      description: input.description ?? null,
       workspaceId,
     },
   });

@@ -12,11 +12,16 @@
 
   "type": "module",
   "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/express-serve-static-core": "^5.1.1",
+    "@types/qs": "^6.15.1",
     "typescript": "^6.0.3"
   },
   "dependencies": {
     "@trpc/server": "^11.18.0",
     "@cleriocode/auth": "workspace:*",
-    "@cleriocode/db": "workspace:*" 
+    "@cleriocode/db": "workspace:*",
+    "@cleriocode/services": "workspace:*",
+    "zod": "^3.25.67"
   }
 }
