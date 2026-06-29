@@ -4,6 +4,8 @@ import { featureRequestRouter } from "./routers/featureRequest.js";
 import { prdRouter } from "./routers/prd.js";
 import { taskRouter } from "./routers/task.js";
 import { githubRouter } from "./routers/github.js";
+import { repositoryRouter } from "./routers/repository.js";
+import { pullRequestRouter } from "./routers/pullRequest.js";
 import { publicProcedure, router } from "./trpc.js";
 
 export const appRouter = router({
@@ -14,6 +16,8 @@ export const appRouter = router({
   prd: prdRouter,
   task: taskRouter,
   github: githubRouter,
+  repository: repositoryRouter,
+  pullRequest: pullRequestRouter,
 });
 
 export type AppRouter = typeof appRouter;
