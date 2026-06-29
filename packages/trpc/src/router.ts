@@ -6,6 +6,9 @@ import { taskRouter } from "./routers/task.js";
 import { githubRouter } from "./routers/github.js";
 import { repositoryRouter } from "./routers/repository.js";
 import { pullRequestRouter } from "./routers/pullRequest.js";
+import { releaseRouter } from "./routers/release.js";
+import { reviewRouter } from "./routers/review.js";
+import { billingRouter } from "./routers/billing.js";
 import { publicProcedure, router } from "./trpc.js";
 
 export const appRouter = router({
@@ -18,6 +21,9 @@ export const appRouter = router({
   github: githubRouter,
   repository: repositoryRouter,
   pullRequest: pullRequestRouter,
+  release: releaseRouter,
+  review: reviewRouter,
+  billing: billingRouter,
 });
 
 export type AppRouter = typeof appRouter;

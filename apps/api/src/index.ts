@@ -8,6 +8,7 @@ import { appRouter, createContext } from "@cleriocode/trpc";
 import { createUserSchema } from "@cleriocode/utils";
 import { inngest, functions } from "@cleriocode/workflows";
 import { githubWebhookHandler } from "./webhooks/github.js";
+import { razorpayWebhookHandler } from "./webhooks/razorpay.js";
 
 const app = express();
 
@@ -35,6 +36,9 @@ app.use(
 
 // GitHub webhook handler
 app.post("/webhooks/github", githubWebhookHandler);
+
+// Razorpay webhook handler
+app.post("/webhooks/razorpay", razorpayWebhookHandler);
 
 // Inngest serve endpoint for workflow function registration
 app.use("/api/inngest", serve({ client: inngest, functions }));

@@ -5,3 +5,5 @@ export * from "./feature-request/index.js";
 export * from "./prd/index.js";
 export * from "./task/index.js";
 export * from "./repository/index.js";
+export * from "./billing/index.js";
+export * from "./release/index.js";
