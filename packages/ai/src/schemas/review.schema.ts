@@ -2,22 +2,16 @@ import { z } from "zod";
 
 export const reviewCommentSchema = z.object({
   file: z.string().describe("File path"),
-  line: z.number().describe("Line number"),
-  severity: z
-    .enum(["critical", "warning", "suggestion"])
-    .describe("Issue severity"),
-  message: z.string().describe("Review comment message"),
+  line: z.number().optional().describe("Line number if applicable"),
+  severity: z.enum(["critical", "warning", "suggestion"]).describe("Issue severity"),
+  message: z.string().describe("Review comment explaining the issue"),
 });
 
 export const codeReviewSchema = z.object({
-  comments: z.array(reviewCommentSchema),
   summary: z.string().describe("Overall review summary"),
-  passed: z
-    .boolean()
-    .describe(
-      "Whether the code passes review (no critical/warning issues)"
-    ),
+  comments: z.array(reviewCommentSchema).describe("Individual review comments"),
+  overallStatus: z.enum(["passed", "needs_changes"]).describe("Whether the PR passes review"),
 });
 
-export type ReviewCommentOutput = z.infer<typeof reviewCommentSchema>;
-export type CodeReviewOutput = z.infer<typeof codeReviewSchema>;
+export type CodeReview = z.infer<typeof codeReviewSchema>;
+export type ReviewComment = z.infer<typeof reviewCommentSchema>;

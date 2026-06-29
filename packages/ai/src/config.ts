@@ -1,14 +1,9 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
-/**
- * OpenRouter provider configuration.
- * Uses OPENROUTER_API_KEY env var to authenticate.
- * Model selection: pass model ID string to the returned function.
- *
- * Environment variables:
- * - OPENROUTER_API_KEY: API key for OpenRouter
- */
-export const openrouter = createOpenAI({
+// Uses OPENROUTER_API_KEY environment variable
+export const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
 });
+
+// Default model for all AI operations
+export const DEFAULT_MODEL = "anthropic/claude-sonnet-4";

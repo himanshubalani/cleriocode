@@ -23,6 +23,7 @@ node_modules/
 *.md
 PROJECT_STEPS.md
 pr-reviewer/
+.codebase-memory/
 
 # Logs
 logs

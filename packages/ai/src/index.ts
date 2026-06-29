@@ -1,17 +1,7 @@
-export { openrouter } from "./config.js";
-export {
-  prdSchema,
-  type PRDOutput,
-} from "./schemas/prd.schema.js";
-export {
-  taskSchema,
-  taskBreakdownSchema,
-  type TaskOutput,
-  type TaskBreakdownOutput,
-} from "./schemas/task.schema.js";
-export {
-  reviewCommentSchema,
-  codeReviewSchema,
-  type ReviewCommentOutput,
-  type CodeReviewOutput,
-} from "./schemas/review.schema.js";
+// Config
+export { openrouter, DEFAULT_MODEL } from "./config.js";
+
+// Schemas
+export { prdSchema, type PRDContent } from "./schemas/prd.schema.js";
+export { taskSchema, taskBreakdownSchema, type TaskBreakdown, type TaskItem } from "./schemas/task.schema.js";
+export { reviewCommentSchema, codeReviewSchema, type CodeReview, type ReviewComment } from "./schemas/review.schema.js";
