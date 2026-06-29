@@ -1,3 +1,8 @@
 node_modules
 .turbo
 .env
+/generated/prisma
+.kiro
+*.md
+PROJECT_STEPS.md
+pr-reviewer/

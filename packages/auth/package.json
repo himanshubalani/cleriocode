@@ -1,7 +1,7 @@
 {
-  "name": "@cleriocode/trpc",
+  "name": "@cleriocode/auth",
   "private": true,
-  "main": "dist/index.js",
+  "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -9,13 +9,12 @@
     "dev": "tsc --watch",
     "build": "tsc"
   },
-
-  "type": "module",
-  "devDependencies": {
-    "typescript": "^6.0.3"
-  },
   "dependencies": {
-    "@trpc/server": "^11.18.0",
-    "@cleriocode/db": "workspace:*" 
+    "better-auth": "^1.6.18",
+    "@cleriocode/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "typescript": "^6.0.3"
   }
 }

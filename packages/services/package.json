@@ -1,7 +1,7 @@
 {
-  "name": "@cleriocode/trpc",
+  "name": "@cleriocode/services",
   "private": true,
-  "main": "dist/index.js",
+  "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -9,13 +9,11 @@
     "dev": "tsc --watch",
     "build": "tsc"
   },
-
-  "type": "module",
+  "dependencies": {
+    "@cleriocode/db": "workspace:*",
+    "@cleriocode/utils": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^6.0.3"
-  },
-  "dependencies": {
-    "@trpc/server": "^11.18.0",
-    "@cleriocode/db": "workspace:*" 
   }
 }
