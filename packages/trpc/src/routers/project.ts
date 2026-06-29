@@ -47,7 +47,7 @@ export const projectRouter = router({
       try {
         return await createProject(input.workspaceId, {
           name: input.name,
-          description: input.description,
+          ...(input.description !== undefined && { description: input.description }),
         });
       } catch (err) {
         mapDomainError(err);

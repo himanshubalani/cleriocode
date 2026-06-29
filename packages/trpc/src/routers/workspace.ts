@@ -76,7 +76,7 @@ export const workspaceRouter = router({
           input.workspaceId,
           input.email,
           input.role,
-          ctx.user.id
+          ctx.user!.id
         );
       } catch (err) {
         mapDomainError(err);
