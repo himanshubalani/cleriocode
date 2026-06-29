@@ -1,10 +1,12 @@
 import express from "express";
 import cors from "cors";
+import { serve } from "inngest/express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "@cleriocode/auth";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter, createContext } from "@cleriocode/trpc";
 import { createUserSchema } from "@cleriocode/utils";
+import { inngest, functions } from "@cleriocode/workflows";
 import { githubWebhookHandler } from "./webhooks/github.js";
 
 const app = express();
@@ -33,6 +35,9 @@ app.use(
 
 // GitHub webhook handler
 app.post("/webhooks/github", githubWebhookHandler);
+
+// Inngest serve endpoint for workflow function registration
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
 app.get("/", (req, res) => {
   return res.json({
