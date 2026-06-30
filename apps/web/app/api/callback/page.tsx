@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 /**
@@ -11,7 +11,7 @@ import { useSearchParams, useRouter } from "next/navigation";
  * We capture the installation_id and redirect the user back to their project
  * settings where they can connect the repos.
  */
-export default function GitHubAppCallbackPage() {
+function GitHubAppCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -61,5 +61,19 @@ export default function GitHubAppCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function GitHubAppCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="size-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        </div>
+      }
+    >
+      <GitHubAppCallbackContent />
+    </Suspense>
   );
 }
