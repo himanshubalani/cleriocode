@@ -1,4 +1,5 @@
 import { prisma } from "@cleriocode/db";
+import { inngest } from "@cleriocode/workflows";
 import { NotFoundError, ConflictError } from "../errors.js";
 
 // ─── Types ───
@@ -25,10 +26,6 @@ export interface TriggerPRDGenerationOutput {
 }
 
 // ─── Helpers ───
-
-function generateId(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
 
 async function verifyProjectBelongsToWorkspace(
   projectId: string,
@@ -119,14 +116,14 @@ export async function triggerPRDGeneration(
     data: { status: "prd_generating" },
   });
 
-  // TODO: Send Inngest event to trigger PRD generation workflow
-  // Once the @cleriocode/workflows package is implemented, replace with:
-  // await inngest.send({ name: "prd/generate.requested", data: { featureRequestId } });
-  const workflowRunId = generateId();
+  const sendResult = await inngest.send({
+    name: "prd/generation.requested",
+    data: { featureRequestId },
+  });
 
   return {
     featureRequestId,
-    workflowRunId,
+    workflowRunId: sendResult.ids[0] ?? featureRequestId,
     status: "prd_generating",
   };
 }

@@ -11,12 +11,14 @@ export async function githubWebhookHandler(req: Request, res: Response) {
   }
 
   // Get raw body for signature verification
-  const payload = (req as any).rawBody || Buffer.from(JSON.stringify(req.body));
+  const payload = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
 
   const isValid = await verifyWebhookSignature(payload, signature);
   if (!isValid) {
     return res.status(401).json({ error: "Invalid signature" });
   }
+
+  const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
   // Only handle pull_request events
   if (event !== "pull_request") {
@@ -24,7 +26,7 @@ export async function githubWebhookHandler(req: Request, res: Response) {
   }
 
   try {
-    const result = await handlePullRequestWebhook(req.body);
+    const result = await handlePullRequestWebhook(body);
     return res.status(200).json({ received: true, ...result });
   } catch (error) {
     console.error("Webhook processing error:", error);

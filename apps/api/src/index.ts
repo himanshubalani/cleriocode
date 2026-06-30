@@ -24,7 +24,20 @@ app.use(
 // BetterAuth needs access to the raw request body for its own parsing.
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-// Standard middleware
+// Webhook routes — parse as raw text so HMAC signature verification
+// uses the original bytes, not a re-serialized JSON object.
+app.post(
+  "/webhooks/github",
+  express.text({ type: "application/json" }),
+  githubWebhookHandler
+);
+app.post(
+  "/webhooks/razorpay",
+  express.text({ type: "application/json" }),
+  razorpayWebhookHandler
+);
+
+// Standard middleware for all other routes
 app.use(express.json());
 
 // tRPC adapter with session-aware context
@@ -35,12 +48,6 @@ app.use(
     createContext,
   })
 );
-
-// GitHub webhook handler
-app.post("/webhooks/github", githubWebhookHandler);
-
-// Razorpay webhook handler
-app.post("/webhooks/razorpay", razorpayWebhookHandler);
 
 // Inngest serve endpoint for workflow function registration
 app.use("/api/inngest", serve({ client: inngest, functions }));

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['korey-hydrometric-soughfully.ngrok-free.dev'],
+  allowedDevOrigins: ['squiggly-impromptu-automated.ngrok-free.dev'],
   async rewrites() {
     return [
       {
