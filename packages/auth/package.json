@@ -2,12 +2,9 @@
   "name": "@cleriocode/auth",
   "private": true,
   "type": "module",
+  "main": "dist/index.js",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
+    ".": "./src/index.ts"
   },
   "scripts": {
     "dev": "tsc --watch",

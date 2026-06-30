@@ -1,4 +1,5 @@
 import { prisma } from "@cleriocode/db";
+import { inngest } from "@cleriocode/workflows";
 import { NotFoundError, ConflictError } from "../errors.js";
 
 const VALID_STATUSES = ["todo", "in_progress", "in_review", "done"] as const;
@@ -173,9 +174,10 @@ export async function triggerTaskGeneration(
     throw new ConflictError("PRD must be approved before generating tasks");
   }
 
-  // TODO: Send Inngest event for async task generation workflow
-  // e.g., await inngest.send({ name: "tasks/generate", data: { prdId, workspaceId } });
-  const workflowRunId = `placeholder-${prdId}-${Date.now()}`;
+  const sendResult = await inngest.send({
+    name: "task/generation.requested",
+    data: { prdId, workspaceId },
+  });
 
-  return { workflowRunId };
+  return { workflowRunId: sendResult.ids[0] ?? prdId };
 }

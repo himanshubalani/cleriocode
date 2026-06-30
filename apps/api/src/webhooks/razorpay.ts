@@ -104,7 +104,7 @@ export async function razorpayWebhookHandler(req: Request, res: Response) {
     return res.status(500).json({ error: "Webhook secret not configured" });
   }
 
-  const payload = JSON.stringify(req.body);
+  const payload = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
 
   if (!verifySignature(payload, signature, webhookSecret)) {
     return res.status(401).json({ error: "Invalid signature" });
@@ -118,7 +118,7 @@ export async function razorpayWebhookHandler(req: Request, res: Response) {
     }
   }
 
-  const event = req.body;
+  const event = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
   if (!HANDLED_EVENTS.has(event.event)) {
     return res.status(200).json({ received: true });
