@@ -13,5 +13,16 @@
     "@types/node": "^26.0.1",
     "prettier": "^3.8.4",
     "turbo": "^2.10.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "protobufjs",
+      "@prisma/engines",
+      "@prisma/client",
+      "prisma",
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ]
   }
 }
