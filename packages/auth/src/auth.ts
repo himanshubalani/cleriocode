@@ -35,6 +35,20 @@ export const auth = betterAuth({
   ].filter(Boolean) as string[],
 
   /**
+   * Advanced configuration for cross-origin cookie handling.
+   * Required when frontend and API are on different domains (e.g., ngrok tunnels).
+   */
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: false,
+    },
+    defaultCookieAttributes: {
+      sameSite: "none" as const,
+      secure: true,
+    },
+  },
+
+  /**
    * Prisma adapter connecting to User, Session, Account, Verification tables.
    */
   database: prismaAdapter(prisma, {

@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { useParams } from "next/navigation";
 
 interface WorkspaceContextType {
   workspaceSlug: string | null;
@@ -19,6 +20,16 @@ const WorkspaceContext = createContext<WorkspaceContextType>({
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const params = useParams<{ workspaceSlug?: string }>();
+
+  // Automatically sync slug from URL params
+  useEffect(() => {
+    if (params.workspaceSlug && params.workspaceSlug !== workspaceSlug) {
+      setWorkspaceSlug(params.workspaceSlug);
+    } else if (!params.workspaceSlug) {
+      // Not on a workspace page — don't clear, keep last known workspace
+    }
+  }, [params.workspaceSlug]);
 
   const setWorkspace = (slug: string, id: string) => {
     setWorkspaceSlug(slug);

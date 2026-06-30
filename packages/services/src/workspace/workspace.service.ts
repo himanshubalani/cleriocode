@@ -118,6 +118,23 @@ export async function listWorkspaces(userId: string) {
 }
 
 /**
+ * Ensures the user has at least one workspace.
+ * If none exists, creates a default "My Workspace" so the user can start immediately.
+ * Returns the list of workspaces (with the new one if created).
+ */
+export async function ensureDefaultWorkspace(userId: string, userName?: string) {
+  const existing = await listWorkspaces(userId);
+  if (existing.length > 0) {
+    return existing;
+  }
+
+  // Create a default workspace for first-time users
+  const workspaceName = userName ? `${userName}'s Workspace` : "My Workspace";
+  const created = await createWorkspace({ name: workspaceName }, userId);
+  return [{ ...created, plan: "free" }];
+}
+
+/**
  * Invites a user to a workspace by email.
  * Validates that the inviter has admin or owner role.
  * Throws NotFoundError if the target user doesn't exist.

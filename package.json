@@ -3,7 +3,8 @@
   "ui": "tui",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=web --filter=@cleriocode/api",
+    "dev:all": "turbo dev",
     "build": "turbo build"
   },
   "packageManager": "pnpm@11.8.0",
