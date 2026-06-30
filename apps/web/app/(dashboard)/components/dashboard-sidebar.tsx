@@ -90,10 +90,11 @@ const bottomNavItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { workspaceSlug } = useWorkspace();
+  const { workspaceSlug, clearWorkspace } = useWorkspace();
   const router = useRouter();
 
   async function handleSignOut() {
+    clearWorkspace();
     await authClient.signOut();
     router.push("/login");
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { trpc } from "@/trpc/trpc";
@@ -16,12 +17,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
+  ArrowRight,
   CheckCircle,
   CircleNotch,
   Target,
   ListChecks,
   ClipboardText,
   Code,
+  Lightning,
 } from "@phosphor-icons/react";
 
 function PRDStatusBadge({ status }: { status: string }) {
@@ -55,6 +58,7 @@ export default function PRDPage() {
     prdId: string;
   }>();
   const { workspaceId } = useWorkspace();
+  const [isGeneratingTasks, setIsGeneratingTasks] = useState(false);
 
   const {
     data: prd,
@@ -71,9 +75,37 @@ export default function PRDPage() {
     },
   });
 
+  const generateTasks = trpc.task.generate.useMutation({
+    onSuccess: () => {
+      setIsGeneratingTasks(true);
+    },
+  });
+
+  // Poll for tasks while generation is in progress, or check once if PRD is approved
+  const isApproved = prd?.status === "approved";
+  const { data: tasks } = trpc.task.list.useQuery(
+    { workspaceId: workspaceId ?? "", prdId: params.prdId },
+    {
+      enabled: !!workspaceId && (isGeneratingTasks || isApproved),
+      refetchInterval: isGeneratingTasks ? 3000 : false,
+    }
+  );
+
+  // Stop polling once tasks appear
+  useEffect(() => {
+    if (isGeneratingTasks && tasks && tasks.length > 0) {
+      setIsGeneratingTasks(false);
+    }
+  }, [isGeneratingTasks, tasks]);
+
   const handleFinalize = () => {
     if (!workspaceId) return;
     finalizePRD.mutate({ workspaceId, prdId: params.prdId });
+  };
+
+  const handleGenerateTasks = () => {
+    if (!workspaceId) return;
+    generateTasks.mutate({ workspaceId, prdId: params.prdId });
   };
 
   if (isLoading) {
@@ -107,7 +139,6 @@ export default function PRDPage() {
   }
 
   const content = prd.content as PRDContent;
-  const isApproved = prd.status === "approved";
 
   return (
     <div className="flex flex-col gap-6">
@@ -138,6 +169,39 @@ export default function PRDPage() {
             )}
             Finalize PRD
           </Button>
+        )}
+
+        {isApproved && (
+          <div className="flex items-center gap-2">
+            {isGeneratingTasks ? (
+              <Button disabled>
+                <CircleNotch data-icon="inline-start" className="animate-spin" />
+                Generating tasks…
+              </Button>
+            ) : tasks && tasks.length > 0 ? (
+              <Link
+                href={`/workspaces/${params.workspaceSlug}/projects/${params.projectId}/tasks`}
+              >
+                <Button variant="outline">
+                  <ListChecks data-icon="inline-start" weight="bold" />
+                  View Tasks
+                  <ArrowRight data-icon="inline-end" />
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                onClick={handleGenerateTasks}
+                disabled={generateTasks.isPending}
+              >
+                {generateTasks.isPending ? (
+                  <CircleNotch data-icon="inline-start" className="animate-spin" />
+                ) : (
+                  <Lightning data-icon="inline-start" weight="bold" />
+                )}
+                Generate Tasks
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

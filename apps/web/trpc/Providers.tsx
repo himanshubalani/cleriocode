@@ -7,10 +7,23 @@ import { httpBatchLink } from "@trpc/client";
 
 import { trpc } from "./trpc";
 
-const API_URL = process.env.BETTER_AUTH_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export function Providers({ children }: {children: React.ReactNode}) {
-	const [queryClient] = useState(() => new QueryClient())
+	const [queryClient] = useState(() => new QueryClient({
+		defaultOptions: {
+			queries: {
+				// Don't retry on UNAUTHORIZED — the user simply needs to log in
+				retry: (failureCount, error: any) => {
+					if (
+						error?.data?.code === "UNAUTHORIZED" ||
+						error?.shape?.data?.httpStatus === 401
+					) return false;
+					return failureCount < 3;
+				},
+			},
+		},
+	}))
 	const [trpcClient] = useState(() => trpc.createClient({
 		links: [
 			httpBatchLink({

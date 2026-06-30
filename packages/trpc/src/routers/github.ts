@@ -1,17 +1,24 @@
+import { prisma } from "@cleriocode/db";
 import { router, protectedProcedure } from "../trpc.js";
 
 /**
  * GitHub Router
- * 
- * TODO: Full implementation pending GitHub integration task.
- * Requires: githubInstallation Prisma model, @cleriocode/utils getGithubApp, triggerRepoSync function.
+ *
+ * Returns the GitHub connection status for the authenticated user by checking
+ * if a GitHub OAuth account exists in the accounts table.
  */
 export const githubRouter = router({
-  // Placeholder — full implementation in a later task
   getStatus: protectedProcedure.query(async ({ ctx }) => {
+    const githubAccount = await prisma.account.findFirst({
+      where: {
+        userId: ctx.user.id,
+        providerId: "github",
+      },
+    });
+
     return {
-      connected: false,
-      accountLogin: null,
+      connected: !!githubAccount,
+      accountLogin: githubAccount?.accountId ?? null,
     };
   }),
 });

@@ -1,5 +1,6 @@
 {
   "name": "cleriocode",
+  "ui": "tui",
   "private": true,
   "scripts": {
     "dev": "turbo dev",

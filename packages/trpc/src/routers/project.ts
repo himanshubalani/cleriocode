@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   createProject,
   listProjects,
+  getProject,
   DomainError,
 } from "@cleriocode/services";
 import { router, workspaceProcedure } from "../trpc.js";
@@ -49,6 +50,25 @@ export const projectRouter = router({
           name: input.name,
           ...(input.description !== undefined && { description: input.description }),
         });
+      } catch (err) {
+        mapDomainError(err);
+      }
+    }),
+
+  /**
+   * Gets a single project by ID within a workspace.
+   * Requirements: 3.1
+   */
+  get: workspaceProcedure
+    .input(
+      z.object({
+        workspaceId: z.string().min(1),
+        projectId: z.string().min(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        return await getProject(input.projectId, input.workspaceId);
       } catch (err) {
         mapDomainError(err);
       }

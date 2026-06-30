@@ -28,6 +28,9 @@ import {
   Link as LinkIcon,
   CheckCircle,
   GitBranch,
+  CircleNotch,
+  WarningCircle,
+  ArrowsClockwise,
 } from "@phosphor-icons/react";
 
 const GITHUB_APP_INSTALL_URL =
@@ -52,6 +55,23 @@ export default function SettingsPage() {
     { workspaceId: workspaceId!, projectId: params.projectId },
     { enabled: !!workspaceId && !!params.projectId }
   );
+
+  // Fetch sync statuses for connected repositories
+  const repoFullNames = repositories?.map((r) => r.fullName) ?? [];
+  const { data: syncStatuses, refetch: refetchSyncStatuses } =
+    trpc.repository.getSyncStatuses.useQuery(
+      { workspaceId: workspaceId!, repoFullNames },
+      {
+        enabled: !!workspaceId && repoFullNames.length > 0,
+      }
+    );
+
+  // Sync codebase mutation
+  const syncMutation = trpc.repository.syncCodebase.useMutation({
+    onSuccess: () => {
+      refetchSyncStatuses();
+    },
+  });
 
   // Connect repository mutation
   const connectMutation = trpc.repository.connect.useMutation({
@@ -143,37 +163,107 @@ export default function SettingsPage() {
                   <TableHead>Installation ID</TableHead>
                   <TableHead>Connected</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {repositories.map((repo) => (
-                  <TableRow key={repo.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <GithubLogo className="size-4 text-muted-foreground" />
-                        {repo.name}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
-                      {repo.fullName}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
-                      {repo.installationId}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {new Date(repo.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className="bg-green-500/10 text-green-500 border-green-500/20"
-                      >
-                        <CheckCircle className="mr-1 size-3" weight="fill" />
-                        Active
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {repositories.map((repo) => {
+                  const status = syncStatuses?.find(
+                    (s: { repoFullName: string; status: string }) =>
+                      s.repoFullName === repo.fullName
+                  );
+                  const syncStatus = status?.status as
+                    | "synced"
+                    | "syncing"
+                    | "error"
+                    | undefined;
+
+                  return (
+                    <TableRow key={repo.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <GithubLogo className="size-4 text-muted-foreground" />
+                          {repo.name}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-xs">
+                        {repo.fullName}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-xs">
+                        {repo.installationId}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs">
+                        {new Date(repo.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {syncStatus === "synced" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-green-500/10 text-green-500 border-green-500/20"
+                          >
+                            <CheckCircle className="mr-1 size-3" weight="fill" />
+                            Synced
+                          </Badge>
+                        ) : syncStatus === "syncing" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          >
+                            <CircleNotch className="mr-1 size-3 animate-spin" />
+                            Syncing
+                          </Badge>
+                        ) : syncStatus === "error" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-red-500/10 text-red-500 border-red-500/20"
+                          >
+                            <WarningCircle className="mr-1 size-3" weight="fill" />
+                            Error
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-green-500/10 text-green-500 border-green-500/20"
+                          >
+                            <CheckCircle className="mr-1 size-3" weight="fill" />
+                            Active
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={
+                            syncMutation.isPending &&
+                            syncMutation.variables?.repoFullName === repo.fullName
+                          }
+                          onClick={() =>
+                            syncMutation.mutate({
+                              workspaceId: workspaceId!,
+                              repoFullName: repo.fullName,
+                              installationId: repo.installationId,
+                              branch: "main",
+                            })
+                          }
+                        >
+                          {syncMutation.isPending &&
+                          syncMutation.variables?.repoFullName === repo.fullName ? (
+                            <>
+                              <CircleNotch className="mr-1 size-3 animate-spin" />
+                              Syncing...
+                            </>
+                          ) : (
+                            <>
+                              <ArrowsClockwise className="mr-1 size-3" />
+                              Sync Now
+                            </>
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (

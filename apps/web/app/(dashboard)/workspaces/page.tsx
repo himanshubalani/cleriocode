@@ -49,7 +49,12 @@ export default function WorkspacesPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    await createWorkspace.mutateAsync({ name: name.trim() });
+    try {
+      await createWorkspace.mutateAsync({ name: name.trim() });
+    } catch (err) {
+      // Error is surfaced via createWorkspace.error — no uncaught rejection
+      console.error("Failed to create workspace:", err);
+    }
   }
 
   function handleWorkspaceClick(slug: string, id: string) {

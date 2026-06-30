@@ -71,7 +71,8 @@ export async function createSubscription(workspaceId: string) {
 
 /**
  * Handles a successful payment webhook from Razorpay.
- * Activates the pro plan and allocates PRO_CREDITS to the workspace.
+ * On first activation: upgrades to pro and allocates credits.
+ * On renewal: replenishes credits for the new billing cycle.
  */
 export async function handlePaymentSuccess(payload: {
   subscriptionId: string;
@@ -83,7 +84,9 @@ export async function handlePaymentSuccess(payload: {
   });
   if (!subscription) return { processed: false, reason: "subscription_not_found" };
 
-  // Activate subscription
+  const isRenewal = subscription.status === "active";
+
+  // Activate/renew subscription
   await prisma.subscription.update({
     where: { id: subscription.id },
     data: {
@@ -97,24 +100,29 @@ export async function handlePaymentSuccess(payload: {
     },
   });
 
-  // Upgrade workspace to pro + allocate credits
-  await prisma.workspace.update({
-    where: { id: subscription.workspaceId },
-    data: {
-      plan: "pro",
-      reviewCredits: PRO_CREDITS,
-    },
-  });
+  if (isRenewal) {
+    // Renewal: replenish credits for the new billing cycle
+    await replenishCredits(subscription.workspaceId);
+  } else {
+    // First activation: upgrade workspace to pro + allocate credits
+    await prisma.workspace.update({
+      where: { id: subscription.workspaceId },
+      data: {
+        plan: "pro",
+        reviewCredits: PRO_CREDITS,
+      },
+    });
 
-  // Record credit allocation in ledger
-  await prisma.reviewCreditLedger.create({
-    data: {
-      workspaceId: subscription.workspaceId,
-      amount: PRO_CREDITS,
-      reason: "plan_upgrade",
-      referenceId: subscription.id,
-    },
-  });
+    // Record credit allocation in ledger
+    await prisma.reviewCreditLedger.create({
+      data: {
+        workspaceId: subscription.workspaceId,
+        amount: PRO_CREDITS,
+        reason: "plan_upgrade",
+        referenceId: subscription.id,
+      },
+    });
+  }
 
   return { processed: true, workspaceId: subscription.workspaceId };
 }

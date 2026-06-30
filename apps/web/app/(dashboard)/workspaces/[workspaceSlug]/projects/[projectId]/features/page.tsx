@@ -85,7 +85,14 @@ export default function FeaturesPage() {
     refetch,
   } = trpc.featureRequest.list.useQuery(
     { workspaceId: workspaceId ?? "", projectId: params.projectId },
-    { enabled: !!workspaceId }
+    {
+      enabled: !!workspaceId,
+      refetchInterval: (query) => {
+        const data = query.state.data;
+        if (data?.some((f) => f.status === "prd_generating")) return 3000;
+        return false;
+      },
+    }
   );
 
   const createFeature = trpc.featureRequest.create.useMutation({

@@ -11,7 +11,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@cleriocode/db";
-import { profile } from "node:console";
 
 export const auth = betterAuth({
   /**
@@ -25,6 +24,15 @@ export const auth = betterAuth({
    * Used for OAuth callbacks and email verification links.
    */
   baseURL: process.env.BETTER_AUTH_URL,
+
+  /**
+   * Trusted origins for session validation.
+   * FRONTEND_URL covers both local dev and ngrok tunnel origins.
+   */
+  trustedOrigins: [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "http://localhost:3000",
+  ].filter(Boolean) as string[],
 
   /**
    * Prisma adapter connecting to User, Session, Account, Verification tables.
