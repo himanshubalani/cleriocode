@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { trpc } from "@/trpc/trpc";
 import { useWorkspace } from "../components/workspace-context";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,19 @@ import {
 } from "@phosphor-icons/react";
 
 export default function WorkspacesPage() {
+  const router = useRouter();
   const { data: workspaces, isLoading, refetch } = trpc.workspace.list.useQuery();
+  const ensureDefault = trpc.workspace.ensureDefault.useMutation({
+    onSuccess: (data) => {
+      if (data && data.length === 1) {
+        // Auto-redirect to the default workspace
+        setWorkspace(data[0].slug, data[0].id);
+        router.push(`/workspaces/${data[0].slug}`);
+      } else {
+        refetch();
+      }
+    },
+  });
   const createWorkspace = trpc.workspace.create.useMutation({
     onSuccess: () => {
       refetch();
@@ -45,6 +58,13 @@ export default function WorkspacesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
+
+  // Auto-create default workspace for new users
+  useEffect(() => {
+    if (!isLoading && workspaces && workspaces.length === 0) {
+      ensureDefault.mutate();
+    }
+  }, [isLoading, workspaces]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();

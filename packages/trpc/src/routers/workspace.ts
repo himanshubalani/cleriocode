@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   createWorkspace,
   listWorkspaces,
+  ensureDefaultWorkspace,
   inviteMember,
   DomainError,
 } from "@cleriocode/services";
@@ -53,6 +54,18 @@ export const workspaceRouter = router({
   list: authedProcedure.query(async ({ ctx }) => {
     try {
       return await listWorkspaces(ctx.user.id);
+    } catch (err) {
+      mapDomainError(err);
+    }
+  }),
+
+  /**
+   * Ensures the user has at least one workspace.
+   * Creates a default workspace if none exists, so new users can start immediately.
+   */
+  ensureDefault: authedProcedure.mutation(async ({ ctx }) => {
+    try {
+      return await ensureDefaultWorkspace(ctx.user.id, ctx.user.name);
     } catch (err) {
       mapDomainError(err);
     }

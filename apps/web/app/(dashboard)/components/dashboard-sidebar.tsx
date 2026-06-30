@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import {
   House,
   Buildings,
@@ -34,64 +34,13 @@ import { useWorkspace } from "./workspace-context";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
-const mainNavItems = [
-  {
-    title: "Overview",
-    href: "/",
-    icon: House,
-  },
-  {
-    title: "Workspaces",
-    href: "/workspaces",
-    icon: Buildings,
-  },
-];
-
-const workspaceNavItems = [
-  {
-    title: "Projects",
-    href: "/projects",
-    icon: Folder,
-  },
-  {
-    title: "Features",
-    href: "/features",
-    icon: Lightbulb,
-  },
-  {
-    title: "Tasks",
-    href: "/tasks",
-    icon: Kanban,
-  },
-  {
-    title: "Pull Requests",
-    href: "/pulls",
-    icon: GitPullRequest,
-  },
-  {
-    title: "Releases",
-    href: "/releases",
-    icon: Rocket,
-  },
-];
-
-const bottomNavItems = [
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Gear,
-  },
-  {
-    title: "Billing",
-    href: "/billing",
-    icon: CreditCard,
-  },
-];
-
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const params = useParams<{ workspaceSlug?: string; projectId?: string }>();
   const { workspaceSlug, clearWorkspace } = useWorkspace();
   const router = useRouter();
+
+  const projectId = params.projectId ?? null;
 
   async function handleSignOut() {
     clearWorkspace();
@@ -99,18 +48,14 @@ export function DashboardSidebar() {
     router.push("/login");
   }
 
-  function getHref(basePath: string, isWorkspaceScoped: boolean) {
-    if (isWorkspaceScoped && workspaceSlug) {
-      return `/workspaces/${workspaceSlug}${basePath}`;
-    }
-    return basePath;
-  }
-
   function isActive(href: string) {
-    if (href === "/") {
-      return pathname === "/";
+    if (href === pathname) return true;
+    // Don't match parent paths for exact items like /workspaces
+    if (href === "/workspaces") return pathname === "/workspaces";
+    if (workspaceSlug && href === `/workspaces/${workspaceSlug}`) {
+      return pathname === `/workspaces/${workspaceSlug}`;
     }
-    return pathname.startsWith(href);
+    return pathname.startsWith(href + "/");
   }
 
   return (
@@ -150,27 +95,19 @@ export function DashboardSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => {
-                const href = getHref(item.href, false);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      isActive={isActive(href)}
-                      tooltip={item.title}
-                    >
-                      <Link href={href} className="flex items-center gap-2">
-                        <item.icon className="size-4" weight={isActive(href) ? "fill" : "regular"} />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive={isActive("/workspaces")} tooltip="Workspaces">
+                  <Link href="/workspaces" className="flex items-center gap-2">
+                    <Buildings className="size-4" weight={isActive("/workspaces") ? "fill" : "regular"} />
+                    <span>Workspaces</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Workspace-scoped navigation — visible only when workspace is selected */}
+        {/* Workspace-scoped navigation */}
         {workspaceSlug && (
           <>
             <SidebarSeparator />
@@ -178,14 +115,46 @@ export function DashboardSidebar() {
               <SidebarGroupLabel>Workspace</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {workspaceNavItems.map((item) => {
-                    const href = getHref(item.href, true);
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isActive(`/workspaces/${workspaceSlug}`)} tooltip="Overview">
+                      <Link href={`/workspaces/${workspaceSlug}`} className="flex items-center gap-2">
+                        <House className="size-4" weight={isActive(`/workspaces/${workspaceSlug}`) ? "fill" : "regular"} />
+                        <span>Overview</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isActive(`/workspaces/${workspaceSlug}/projects`)} tooltip="Projects">
+                      <Link href={`/workspaces/${workspaceSlug}/projects`} className="flex items-center gap-2">
+                        <Folder className="size-4" weight={isActive(`/workspaces/${workspaceSlug}/projects`) ? "fill" : "regular"} />
+                        <span>Projects</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
+
+        {/* Project-scoped navigation — visible when inside a project */}
+        {workspaceSlug && projectId && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+              <SidebarGroupLabel>Project</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {[
+                    { title: "Features", href: "features", icon: Lightbulb },
+                    { title: "Tasks", href: "tasks", icon: Kanban },
+                    { title: "Pull Requests", href: "pulls", icon: GitPullRequest },
+                    { title: "Releases", href: "releases", icon: Rocket },
+                  ].map((item) => {
+                    const href = `/workspaces/${workspaceSlug}/projects/${projectId}/${item.href}`;
                     return (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          isActive={isActive(href)}
-                          tooltip={item.title}
-                        >
+                        <SidebarMenuButton isActive={isActive(href)} tooltip={item.title}>
                           <Link href={href} className="flex items-center gap-2">
                             <item.icon className="size-4" weight={isActive(href) ? "fill" : "regular"} />
                             <span>{item.title}</span>
@@ -200,32 +169,34 @@ export function DashboardSidebar() {
           </>
         )}
 
-        {/* Bottom section — settings & billing */}
-        <SidebarSeparator />
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {bottomNavItems.map((item) => {
-                const href = workspaceSlug
-                  ? `/workspaces/${workspaceSlug}${item.href}`
-                  : item.href;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      isActive={isActive(href)}
-                      tooltip={item.title}
-                    >
-                      <Link href={href} className="flex items-center gap-2">
-                        <item.icon className="size-4" weight={isActive(href) ? "fill" : "regular"} />
-                        <span>{item.title}</span>
+        {/* Settings & Billing */}
+        {workspaceSlug && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isActive(`/workspaces/${workspaceSlug}/settings`)} tooltip="Settings">
+                      <Link href={`/workspaces/${workspaceSlug}/settings`} className="flex items-center gap-2">
+                        <Gear className="size-4" weight={isActive(`/workspaces/${workspaceSlug}/settings`) ? "fill" : "regular"} />
+                        <span>Settings</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={isActive(`/workspaces/${workspaceSlug}/billing`)} tooltip="Billing">
+                      <Link href={`/workspaces/${workspaceSlug}/billing`} className="flex items-center gap-2">
+                        <CreditCard className="size-4" weight={isActive(`/workspaces/${workspaceSlug}/billing`) ? "fill" : "regular"} />
+                        <span>Billing</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
