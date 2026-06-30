@@ -6,6 +6,69 @@ const FREE_CREDITS = 5;
 const PRO_CREDITS = 100;
 
 /**
+ * Subscription status result with explicit plan, status, credits, and renewal info.
+ */
+export interface SubscriptionStatus {
+  plan: "free" | "pro";
+  status: "active" | "canceled" | "created" | "pending" | null;
+  reviewCredits: number;
+  renewsAt: Date | null;
+}
+
+/**
+ * Returns the full subscription status for a workspace using explicit early-return
+ * logic for every edge case.
+ *
+ * Follows the same pattern as pr-reviewer's getUserSubscription:
+ * - No subscription → free/active
+ * - Subscription created but not yet active → free/pending
+ * - Subscription active → pro/active with credits
+ * - Subscription canceled but within billing period → pro/active (still accessible)
+ * - Subscription canceled and expired → free/canceled
+ */
+export async function getSubscriptionStatus(workspaceId: string): Promise<SubscriptionStatus> {
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    include: { subscription: true },
+  });
+  if (!workspace) throw new NotFoundError("Workspace", workspaceId);
+
+  const subscription = workspace.subscription;
+  const reviewCredits = workspace.reviewCredits;
+
+  // No subscription record at all — workspace is on the free plan
+  if (!subscription) {
+    return { plan: "free", status: null, reviewCredits, renewsAt: null };
+  }
+
+  const renewsAt = subscription.currentPeriodEnd ?? null;
+
+  // Subscription was created but never activated (awaiting first payment)
+  if (subscription.status === "created") {
+    return { plan: "free", status: "created", reviewCredits, renewsAt };
+  }
+
+  // Subscription is active — workspace is on pro
+  if (subscription.status === "active") {
+    return { plan: "pro", status: "active", reviewCredits, renewsAt };
+  }
+
+  // Subscription was canceled — check if still within the paid period
+  if (subscription.status === "canceled") {
+    const stillActive = renewsAt !== null && renewsAt > new Date();
+
+    if (stillActive) {
+      return { plan: "pro", status: "active", reviewCredits, renewsAt };
+    }
+
+    return { plan: "free", status: "canceled", reviewCredits, renewsAt };
+  }
+
+  // Fallback for any unexpected status
+  return { plan: "free", status: subscription.status as SubscriptionStatus["status"], reviewCredits, renewsAt };
+}
+
+/**
  * Returns the billing status for a workspace including plan, credits,
  * and subscription info.
  */
@@ -71,8 +134,10 @@ export async function createSubscription(workspaceId: string) {
 
 /**
  * Handles a successful payment webhook from Razorpay.
- * On first activation: upgrades to pro and allocates credits.
- * On renewal: replenishes credits for the new billing cycle.
+ *
+ * Uses explicit early-return logic:
+ * - If subscription is already active → this is a renewal → replenish credits
+ * - If subscription is not yet active → this is first activation → upgrade to pro
  */
 export async function handlePaymentSuccess(payload: {
   subscriptionId: string;
@@ -84,9 +149,7 @@ export async function handlePaymentSuccess(payload: {
   });
   if (!subscription) return { processed: false, reason: "subscription_not_found" };
 
-  const isRenewal = subscription.status === "active";
-
-  // Activate/renew subscription
+  // Update subscription period regardless of activation vs renewal
   await prisma.subscription.update({
     where: { id: subscription.id },
     data: {
@@ -100,31 +163,31 @@ export async function handlePaymentSuccess(payload: {
     },
   });
 
-  if (isRenewal) {
-    // Renewal: replenish credits for the new billing cycle
+  // Renewal: subscription was already active → just replenish credits
+  if (subscription.status === "active") {
     await replenishCredits(subscription.workspaceId);
-  } else {
-    // First activation: upgrade workspace to pro + allocate credits
-    await prisma.workspace.update({
-      where: { id: subscription.workspaceId },
-      data: {
-        plan: "pro",
-        reviewCredits: PRO_CREDITS,
-      },
-    });
-
-    // Record credit allocation in ledger
-    await prisma.reviewCreditLedger.create({
-      data: {
-        workspaceId: subscription.workspaceId,
-        amount: PRO_CREDITS,
-        reason: "plan_upgrade",
-        referenceId: subscription.id,
-      },
-    });
+    return { processed: true, action: "renewal", workspaceId: subscription.workspaceId };
   }
 
-  return { processed: true, workspaceId: subscription.workspaceId };
+  // First activation: upgrade workspace to pro + allocate credits
+  await prisma.workspace.update({
+    where: { id: subscription.workspaceId },
+    data: {
+      plan: "pro",
+      reviewCredits: PRO_CREDITS,
+    },
+  });
+
+  await prisma.reviewCreditLedger.create({
+    data: {
+      workspaceId: subscription.workspaceId,
+      amount: PRO_CREDITS,
+      reason: "plan_upgrade",
+      referenceId: subscription.id,
+    },
+  });
+
+  return { processed: true, action: "activation", workspaceId: subscription.workspaceId };
 }
 
 /**
