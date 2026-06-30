@@ -5,8 +5,10 @@ import { assertWorkspaceRole } from '@cleriocode/services';
 
 // 1. Create Context
 export const createContext = async ({ req, res }: CreateExpressContextOptions) => {
-  // BetterAuth can read the headers from Express to find the session
-  const session = await auth.api.getSession({ headers: req.headers as any });
+  // Convert Express headers (Node.js IncomingHttpHeaders) to a proper Headers object
+  // that BetterAuth can read (including the Cookie header for session lookup)
+  const headers = new Headers(req.headers as HeadersInit);
+  const session = await auth.api.getSession({ headers });
   
   return {
     req,

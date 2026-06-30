@@ -39,7 +39,7 @@ export default function RegisterPage() {
       if (authError) {
         setError(authError.message || "Registration failed");
       } else {
-        router.push("/");
+        router.push("/workspaces");
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -52,7 +52,7 @@ export default function RegisterPage() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-xl font-semibold tracking-tight">
-          ShipFlow AI
+          ClerioCode
         </CardTitle>
         <CardDescription>Create your account</CardDescription>
       </CardHeader>

@@ -7,12 +7,20 @@ import { httpBatchLink } from "@trpc/client";
 
 import { trpc } from "./trpc";
 
+const API_URL = process.env.BETTER_AUTH_URL || "http://localhost:5000";
+
 export function Providers({ children }: {children: React.ReactNode}) {
 	const [queryClient] = useState(() => new QueryClient())
 	const [trpcClient] = useState(() => trpc.createClient({
 		links: [
 			httpBatchLink({
-				url: "http://localhost:5000/trpc",
+				url: `${API_URL}/trpc`,
+				fetch(url, options) {
+					return fetch(url, {
+						...options,
+						credentials: "include",
+					});
+				},
 			}),
 		],
 	}));

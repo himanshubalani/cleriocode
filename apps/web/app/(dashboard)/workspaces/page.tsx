@@ -33,8 +33,14 @@ import {
 } from "@phosphor-icons/react";
 
 export default function WorkspacesPage() {
-  const { data: workspaces, isLoading } = trpc.workspace.list.useQuery();
-  const createWorkspace = trpc.workspace.create.useMutation();
+  const { data: workspaces, isLoading, refetch } = trpc.workspace.list.useQuery();
+  const createWorkspace = trpc.workspace.create.useMutation({
+    onSuccess: () => {
+      refetch();
+      setName("");
+      setDialogOpen(false);
+    },
+  });
   const { setWorkspace } = useWorkspace();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,10 +49,7 @@ export default function WorkspacesPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-
     await createWorkspace.mutateAsync({ name: name.trim() });
-    setName("");
-    setDialogOpen(false);
   }
 
   function handleWorkspaceClick(slug: string, id: string) {

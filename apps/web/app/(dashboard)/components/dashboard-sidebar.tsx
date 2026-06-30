@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   House,
@@ -13,7 +14,6 @@ import {
   Gear,
   CreditCard,
   SignOut,
-  RocketLaunch,
 } from "@phosphor-icons/react";
 
 import {
@@ -31,6 +31,8 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useWorkspace } from "./workspace-context";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const mainNavItems = [
   {
@@ -89,6 +91,12 @@ const bottomNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { workspaceSlug } = useWorkspace();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await authClient.signOut();
+    router.push("/login");
+  }
 
   function getHref(basePath: string, isWorkspaceScoped: boolean) {
     if (isWorkspaceScoped && workspaceSlug) {
@@ -109,14 +117,26 @@ export function DashboardSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="ShipFlow AI">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-amber-500/10">
-                  <RocketLaunch className="size-4 text-amber-500" weight="fill" />
-                </div>
-                <span className="truncate text-sm font-semibold tracking-tight">
-                  ShipFlow AI
-                </span>
+            <SidebarMenuButton size="lg" tooltip="ClerioCode" asChild>
+              <Link href="/workspaces" className="flex items-center gap-2">
+                {/* Light mode logo */}
+                <Image
+                  src="/cleriocode_header_light_mode.svg"
+                  alt="ClerioCode"
+                  width={120}
+                  height={32}
+                  priority
+                  className="block dark:hidden"
+                />
+                {/* Dark mode logo */}
+                <Image
+                  src="/cleriocode_header_dark_mode.svg"
+                  alt="ClerioCode"
+                  width={120}
+                  height={32}
+                  priority
+                  className="hidden dark:block"
+                />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -210,7 +230,7 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Sign out">
+            <SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
               <SignOut className="size-4" />
               <span>Sign out</span>
             </SidebarMenuButton>

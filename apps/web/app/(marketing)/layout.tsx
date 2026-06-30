@@ -14,7 +14,7 @@ export default function MarketingLayout({
             href="/"
             className="text-lg font-semibold tracking-tight text-foreground"
           >
-            ShipFlow
+            ClerioCode
           </Link>
           <div className="flex items-center gap-3">
             <Link
@@ -35,7 +35,7 @@ export default function MarketingLayout({
       <main className="flex-1">{children}</main>
       <footer className="border-t border-border/40 py-8">
         <div className="mx-auto max-w-6xl px-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} ShipFlow. Ship features from idea to
+          © {new Date().getFullYear()} ClerioCode. Ship features from idea to
           production.
         </div>
       </footer>

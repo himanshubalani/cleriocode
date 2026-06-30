@@ -38,7 +38,7 @@ export default function LoginPage() {
       if (authError) {
         setError(authError.message || "Invalid credentials");
       } else {
-        router.push("/");
+        router.push("/workspaces");
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -50,7 +50,7 @@ export default function LoginPage() {
   async function handleGitHubLogin() {
     await authClient.signIn.social({
       provider: "github",
-      callbackURL: "/",
+      callbackURL: "/workspaces",
     });
   }
 
@@ -58,7 +58,7 @@ export default function LoginPage() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-xl font-semibold tracking-tight">
-          ShipFlow AI
+          ClerioCode
         </CardTitle>
         <CardDescription>Sign in to your account</CardDescription>
       </CardHeader>

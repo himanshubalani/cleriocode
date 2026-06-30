@@ -12,18 +12,20 @@ import { razorpayWebhookHandler } from "./webhooks/razorpay.js";
 
 const app = express();
 
-// Mount BetterAuth BEFORE body parsing middleware.
-// BetterAuth needs access to the raw request body for its own parsing.
-app.all("/api/auth/*splat", toNodeHandler(auth));
-
-// Standard middleware
-app.use(express.json());
+// CORS must be first — applies to ALL routes including BetterAuth
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
   })
 );
+
+// Mount BetterAuth BEFORE body parsing middleware.
+// BetterAuth needs access to the raw request body for its own parsing.
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
+// Standard middleware
+app.use(express.json());
 
 // tRPC adapter with session-aware context
 app.use(
