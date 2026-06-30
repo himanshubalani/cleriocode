@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { trpc } from "@/trpc/trpc";
-import { useWorkspace } from "../../components/workspace-context";
+import { useWorkspace } from "../../../components/workspace-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -162,7 +162,7 @@ export default function BillingPage() {
               <Progress value={creditPercent}>
                 <ProgressLabel className="sr-only">Credits used</ProgressLabel>
                 <ProgressValue className="sr-only">
-                  {creditPercent}%
+                  {() => `${creditPercent}%`}
                 </ProgressValue>
               </Progress>
             </div>

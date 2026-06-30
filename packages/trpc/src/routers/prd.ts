@@ -37,10 +37,10 @@ export const prdRouter = router({
         workspaceId: z.string(),
         prdId: z.string(),
         content: z.object({
-          goals: z.array(z.string()),
-          requirements: z.array(z.string()),
-          acceptanceCriteria: z.array(z.string()),
-          technicalNotes: z.array(z.string()),
+          goals: z.array(z.string().trim().min(1)),
+          requirements: z.array(z.string().trim().min(1)),
+          acceptanceCriteria: z.array(z.string().trim().min(1)),
+          technicalNotes: z.array(z.string().trim().min(1)),
         }),
       })
     )

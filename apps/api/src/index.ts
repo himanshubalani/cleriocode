@@ -65,7 +65,7 @@ app.post("/users", (req, res) => {
     });
   }
 
-  console.log("Created user:", result.data);
+  console.log("Created user");
 
   return res.status(201).json({
     success: true,

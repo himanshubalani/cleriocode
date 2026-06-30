@@ -23,6 +23,7 @@ export function chunkPrFiles(prNumber: number, files: PrFile[]): CodeChunk[] {
     for (let start = 0; start < lines.length; start += MAX_CHUNK_LINES) {
       const part = start / MAX_CHUNK_LINES;
       const text = lines.slice(start, start + MAX_CHUNK_LINES).join("\n");
+      if (text.trim() === "") continue;
 
       chunks.push({
         id: buildPrChunkId(prNumber, file.filePath, part),
@@ -48,6 +49,7 @@ export function chunkRepoFiles(files: RepoFile[]): CodeChunk[] {
     for (let start = 0; start < lines.length; start += MAX_CHUNK_LINES) {
       const part = start / MAX_CHUNK_LINES;
       const text = lines.slice(start, start + MAX_CHUNK_LINES).join("\n");
+      if (text.trim() === "") continue;
 
       chunks.push({
         id: buildRepoChunkId(file.filePath, part),

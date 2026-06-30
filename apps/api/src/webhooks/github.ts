@@ -11,7 +11,7 @@ export async function githubWebhookHandler(req: Request, res: Response) {
   }
 
   // Get raw body for signature verification
-  const payload = JSON.stringify(req.body);
+  const payload = (req as any).rawBody || Buffer.from(JSON.stringify(req.body));
 
   const isValid = await verifyWebhookSignature(payload, signature);
   if (!isValid) {
@@ -28,6 +28,6 @@ export async function githubWebhookHandler(req: Request, res: Response) {
     return res.status(200).json({ received: true, ...result });
   } catch (error) {
     console.error("Webhook processing error:", error);
-    return res.status(200).json({ received: true, error: "Processing failed" });
+    return res.status(500).json({ received: false, error: "Processing failed" });
   }
 }

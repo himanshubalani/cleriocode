@@ -138,7 +138,8 @@ export default function PRDPage() {
     );
   }
 
-  const content = prd.content as PRDContent;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const content = (prd as any).content as PRDContent;
 
   return (
     <div className="flex flex-col gap-6">

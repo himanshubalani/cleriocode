@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
-import { handlePaymentSuccess, handlePaymentFailure } from "@cleriocode/services";
+import {
+  handlePaymentSuccess,
+  handlePaymentFailure,
+  handleSubscriptionCancelled,
+} from "@cleriocode/services";
 
 /** Events we actively handle. Everything else gets acknowledged without processing. */
 const HANDLED_EVENTS = new Set([
@@ -9,6 +13,13 @@ const HANDLED_EVENTS = new Set([
   "subscription.cancelled",
   "payment.failed",
 ]);
+
+/**
+ * In-memory set of processed event IDs for replay protection.
+ * In production, replace with a persistent store (e.g. Redis or DB) so
+ * dedup survives restarts and works across multiple instances.
+ */
+const processedEventIds = new Set<string>();
 
 /**
  * Extracts the subscription entity from a Razorpay webhook payload.
@@ -45,15 +56,26 @@ async function routeEvent(event: Record<string, any>) {
   const eventName: string = event.event;
 
   if (eventName === "subscription.activated" || eventName === "subscription.charged") {
-    await handlePaymentSuccess({
+    const successPayload: Parameters<typeof handlePaymentSuccess>[0] = { subscriptionId };
+    if (entity.current_start) {
+      successPayload.currentPeriodStart = new Date(entity.current_start * 1000).toISOString();
+    }
+    if (entity.current_end) {
+      successPayload.currentPeriodEnd = new Date(entity.current_end * 1000).toISOString();
+    }
+    await handlePaymentSuccess(successPayload);
+    return;
+  }
+
+  if (eventName === "subscription.cancelled") {
+    await handleSubscriptionCancelled({
       subscriptionId,
-      currentPeriodStart: entity.current_start?.toString(),
-      currentPeriodEnd: entity.current_end?.toString(),
+      cancelledAt: new Date().toISOString(),
     });
     return;
   }
 
-  if (eventName === "subscription.cancelled" || eventName === "payment.failed") {
+  if (eventName === "payment.failed") {
     await handlePaymentFailure({
       subscriptionId,
       reason: eventName,
@@ -63,7 +85,8 @@ async function routeEvent(event: Record<string, any>) {
 
 /**
  * Razorpay webhook handler.
- * Verifies signature using HMAC SHA-256, then routes event to billing service.
+ * Verifies signature using HMAC SHA-256, deduplicates on event ID,
+ * then routes event to billing service.
  *
  * Environment variable required:
  * - RAZORPAY_WEBHOOK_SECRET
@@ -87,6 +110,14 @@ export async function razorpayWebhookHandler(req: Request, res: Response) {
     return res.status(401).json({ error: "Invalid signature" });
   }
 
+  // Replay protection: deduplicate on x-razorpay-event-id
+  const eventId = req.headers["x-razorpay-event-id"] as string | undefined;
+  if (eventId) {
+    if (processedEventIds.has(eventId)) {
+      return res.status(200).json({ received: true, deduplicated: true });
+    }
+  }
+
   const event = req.body;
 
   if (!HANDLED_EVENTS.has(event.event)) {
@@ -95,10 +126,15 @@ export async function razorpayWebhookHandler(req: Request, res: Response) {
 
   try {
     await routeEvent(event);
+    // Mark as processed only after successful handling
+    if (eventId) {
+      processedEventIds.add(eventId);
+    }
     return res.status(200).json({ received: true });
   } catch (error) {
     console.error("Razorpay webhook processing error:", error);
-    // Always return 200 to acknowledge receipt (prevents Razorpay retries)
-    return res.status(200).json({ received: true, error: "Processing failed" });
+    // Return 500 so Razorpay retries the delivery for transient failures.
+    // The event-id dedup above prevents double-processing on successful retries.
+    return res.status(500).json({ error: "Processing failed" });
   }
 }

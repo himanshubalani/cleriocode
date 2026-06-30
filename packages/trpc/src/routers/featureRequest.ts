@@ -14,8 +14,8 @@ export const featureRequestRouter = router({
       z.object({
         workspaceId: z.string(),
         projectId: z.string(),
-        title: z.string().min(1),
-        description: z.string().min(1),
+        title: z.string().trim().min(1),
+        description: z.string().trim().min(1),
       })
     )
     .mutation(async ({ ctx, input }) => {

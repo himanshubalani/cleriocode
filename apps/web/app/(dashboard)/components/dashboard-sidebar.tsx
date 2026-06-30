@@ -118,7 +118,7 @@ export function DashboardSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="ClerioCode" asChild>
+            <SidebarMenuButton size="lg" tooltip="ClerioCode" render={
               <Link href="/workspaces" className="flex items-center gap-2">
                 {/* Light mode logo */}
                 <Image
@@ -139,7 +139,7 @@ export function DashboardSidebar() {
                   className="hidden dark:block"
                 />
               </Link>
-            </SidebarMenuButton>
+            } />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

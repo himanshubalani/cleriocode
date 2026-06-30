@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import { useState, useCallback, useEffect, DragEvent } from "react";
 import { useParams } from "next/navigation";
 import { trpc } from "@/trpc/trpc";

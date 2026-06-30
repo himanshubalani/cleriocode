@@ -15,3 +15,18 @@ export const codeReviewSchema = z.object({
 
 export type CodeReview = z.infer<typeof codeReviewSchema>;
 export type ReviewComment = z.infer<typeof reviewCommentSchema>;
+
+/**
+ * Enforces the overallStatus/severity invariant: if any comment has
+ * "critical" or "warning" severity, overallStatus must be "needs_changes".
+ * Call this after parsing to correct inconsistent model outputs.
+ */
+export function enforceStatusInvariant(review: CodeReview): CodeReview {
+  const hasBlockingIssues = review.comments.some(
+    (c) => c.severity === "critical" || c.severity === "warning"
+  );
+  if (hasBlockingIssues && review.overallStatus === "passed") {
+    return { ...review, overallStatus: "needs_changes" };
+  }
+  return review;
+}

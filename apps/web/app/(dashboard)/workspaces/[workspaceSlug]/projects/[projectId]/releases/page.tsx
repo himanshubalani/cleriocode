@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { trpc } from "@/trpc/trpc";
-import { useWorkspace } from "../../../../components/workspace-context";
+import { useWorkspace } from "@/app/(dashboard)/components/workspace-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -205,7 +205,7 @@ export default function ReleasesPage() {
                       {formatDate(release.createdAt)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {release.approvedBy ?? "—"}
+                      {release.approvedById ?? "—"}
                     </TableCell>
                     <TableCell>
                       <Badge

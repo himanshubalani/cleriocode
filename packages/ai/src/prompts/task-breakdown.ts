@@ -21,7 +21,13 @@ ${prd.acceptanceCriteria.join("\n- ")}
 Technical Notes:
 ${prd.technicalNotes.join("\n- ")}
 
-Generate tasks with clear titles, detailed descriptions, and complexity estimates (low/medium/high). Tasks should be independently implementable.`,
+Non-Goals:
+${prd.nonGoals?.join("\n- ") ?? "None"}
+
+Edge Cases:
+${prd.edgeCases?.join("\n- ") ?? "None"}
+
+Generate tasks with clear titles, detailed descriptions, and complexity estimates (low/medium/high). Respect the non-goals and cover the relevant edge cases. Tasks should be independently implementable.`,
   });
   return result.object;
 }

@@ -7,9 +7,18 @@ let pinecone: Pinecone | null = null;
  * Uses PINECONE_API_KEY and PINECONE_INDEX environment variables.
  */
 export function getPineconeIndex() {
-  if (!pinecone) {
-    pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+  const apiKey = process.env.PINECONE_API_KEY;
+  const indexName = process.env.PINECONE_INDEX;
+
+  if (!apiKey || !indexName) {
+    throw new Error(
+      "Missing Pinecone configuration: PINECONE_API_KEY and PINECONE_INDEX are required."
+    );
   }
 
-  return pinecone.index({ name: process.env.PINECONE_INDEX! });
+  if (!pinecone) {
+    pinecone = new Pinecone({ apiKey });
+  }
+
+  return pinecone.index({ name: indexName });
 }

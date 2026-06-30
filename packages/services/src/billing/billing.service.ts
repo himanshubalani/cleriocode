@@ -191,6 +191,30 @@ export async function handlePaymentSuccess(payload: {
 }
 
 /**
+ * Handles a subscription cancellation webhook from Razorpay.
+ * Marks the subscription as canceled. The workspace retains pro access
+ * until currentPeriodEnd (grace period logic is in getSubscriptionStatus).
+ */
+export async function handleSubscriptionCancelled(payload: {
+  subscriptionId: string;
+  cancelledAt?: string;
+}) {
+  const subscription = await prisma.subscription.findFirst({
+    where: { razorpaySubscriptionId: payload.subscriptionId },
+  });
+  if (!subscription) return { processed: false, reason: "subscription_not_found" };
+
+  await prisma.subscription.update({
+    where: { id: subscription.id },
+    data: {
+      status: "canceled",
+    },
+  });
+
+  return { processed: true, action: "canceled", workspaceId: subscription.workspaceId };
+}
+
+/**
  * Handles a payment failure webhook from Razorpay.
  * Logs the failure but preserves the current plan (no downgrade on failure).
  */
