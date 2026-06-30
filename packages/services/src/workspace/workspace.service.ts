@@ -102,6 +102,7 @@ export async function listWorkspaces(userId: string) {
           id: true,
           name: true,
           slug: true,
+          plan: true,
         },
       },
     },
@@ -111,6 +112,7 @@ export async function listWorkspaces(userId: string) {
     id: m.workspace.id,
     name: m.workspace.name,
     slug: m.workspace.slug,
+    plan: m.workspace.plan,
     role: m.role,
   }));
 }

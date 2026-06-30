@@ -168,10 +168,7 @@ export default function SettingsPage() {
               </TableHeader>
               <TableBody>
                 {repositories.map((repo) => {
-                  const status = syncStatuses?.find(
-                    (s: { repoFullName: string; status: string }) =>
-                      s.repoFullName === repo.fullName
-                  );
+                  const status = syncStatuses?.[repo.fullName];
                   const syncStatus = status?.status as
                     | "synced"
                     | "syncing"
