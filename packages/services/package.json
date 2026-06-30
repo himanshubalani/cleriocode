@@ -1,0 +1,24 @@
+{
+  "name": "@cleriocode/services",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cleriocode/db": "workspace:*",
+    "@cleriocode/github": "workspace:*",
+    "@cleriocode/utils": "workspace:*",
+    "@cleriocode/workflows": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.8.0",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.3"
+  }
+}

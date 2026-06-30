@@ -1,5 +1,6 @@
 {
   "name": "cleriocode",
+  "ui": "tui",
   "private": true,
   "scripts": {
     "dev": "turbo dev",
@@ -8,6 +9,7 @@
   "packageManager": "pnpm@11.8.0",
   "type": "module",
   "devDependencies": {
+    "@types/node": "^26.0.1",
     "prettier": "^3.8.4",
     "turbo": "^2.10.0"
   }

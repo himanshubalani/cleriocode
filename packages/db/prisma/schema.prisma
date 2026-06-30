@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth Models (BetterAuth compatible) ───
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions         Session[]
+  accounts         Account[]
+  workspaceMembers WorkspaceMember[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─── Multi-Tenant Domain Models ───
+
+model Workspace {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  plan          String   @default("free")
+  reviewCredits Int      @default(5)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  members      WorkspaceMember[]
+  projects     Project[]
+  subscription Subscription?
+  creditLedger ReviewCreditLedger[]
+
+  @@map("workspace")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String    @default("member")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("workspace_member")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  featureRequests FeatureRequest[]
+  repositories    Repository[]
+  releases        Release[]
+
+  @@index([workspaceId])
+  @@map("project")
+}
+
+model FeatureRequest {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  status      String   @default("open")
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  prd PRD?
+
+  @@index([projectId])
+  @@map("feature_request")
+}
+
+model PRD {
+  id               String         @id @default(cuid())
+  content          Json
+  status           String         @default("draft")
+  featureRequestId String         @unique
+  featureRequest   FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  tasks Task[]
+
+  @@map("prd")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  status      String   @default("todo")
+  complexity  String   @default("medium")
+  order       Int      @default(0)
+  prdId       String
+  prd         PRD      @relation(fields: [prdId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([prdId])
+  @@index([status])
+  @@map("task")
+}
+
+model Repository {
+  id             String   @id @default(cuid())
+  owner          String
+  name           String
+  fullName       String
+  installationId Int
+  projectId      String
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  webhookId      Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  pullRequests PullRequest[]
+
+  @@unique([fullName])
+  @@index([projectId])
+  @@map("repository")
+}
+
+model PullRequest {
+  id           String     @id @default(cuid())
+  prNumber     Int
+  title        String
+  authorLogin  String?
+  headSha      String
+  baseBranch   String
+  status       String     @default("open")
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  reviews AIReview[]
+
+  @@unique([repositoryId, prNumber])
+  @@index([repositoryId])
+  @@index([status])
+  @@map("pull_request")
+}
+
+model AIReview {
+  id                String      @id @default(cuid())
+  status            String      @default("pending")
+  comments          Json
+  summary           String?
+  pullRequestId     String
+  pullRequest       PullRequest @relation(fields: [pullRequestId], references: [id], onDelete: Cascade)
+  previousReviewId  String?
+  previousReview    AIReview?   @relation("ReviewChain", fields: [previousReviewId], references: [id])
+  nextReviews       AIReview[]  @relation("ReviewChain")
+  reviewedCommitSha String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([pullRequestId])
+  @@map("ai_review")
+}
+
+model Release {
+  id           String   @id @default(cuid())
+  version      String
+  notes        String?
+  approvedById String
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([projectId])
+  @@map("release")
+}
+
+// ─── Billing Models ───
+
+model Subscription {
+  id                     String    @id @default(cuid())
+  workspaceId            String    @unique
+  workspace              Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  razorpaySubscriptionId String    @unique
+  razorpayPlanId         String
+  status                 String    @default("created")
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@map("subscription")
+}
+
+model ReviewCreditLedger {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  amount      Int
+  reason      String
+  referenceId String?
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId])
+  @@map("review_credit_ledger")
+}
+
+// ─── Repo Sync (Codebase Context for AI Reviews) ───
+
+model RepoSync {
+  id             String    @id @default(cuid())
+  repoFullName   String    @unique
+  installationId Int
+  branch         String    @default("main")
+  status         String    @default("pending")
+  chunkCount     Int?
+  syncedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+  @@map("repo_sync")
+}

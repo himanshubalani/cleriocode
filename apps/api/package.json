@@ -14,9 +14,15 @@
   "dependencies": {
     "@cleriocode/utils": "workspace:*",
     "@cleriocode/trpc": "workspace:*",
+    "@cleriocode/auth": "workspace:*",
+    "@cleriocode/github": "workspace:*",
+    "@cleriocode/services": "workspace:*",
+    "@cleriocode/workflows": "workspace:*",
     "@trpc/server": "^11.18.0",
+    "better-auth": "^1.6.18",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "inngest": "^3.29.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

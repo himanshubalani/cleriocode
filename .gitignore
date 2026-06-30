@@ -1,3 +1,41 @@
-node_modules
+node_modules/
+.pnpm-store/
 .turbo
+*.pem
+
+# Next.js Build Outputs (Applies across all apps)
+**/.next/
+**/out/
+
+
+# tRPC & Build Artifacts
+**/dist/
+**/build/
+**/.turbo/
+.cache/
+
+# Database & Prisma (If used for tRPC backend)
+**/prisma/*.db
+**/prisma/*.db-journal
+
 .env
+/generated/prisma
+.kiro
+*.md
+PROJECT_STEPS.md
+pr-reviewer/
+.codebase-memory/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing & Coverage
+**/coverage/
+**/.nyc_output/
+**/.playwright/
+**/test-results/
