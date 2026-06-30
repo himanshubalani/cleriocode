@@ -21,10 +21,10 @@ node_modules/
 .env
 /generated/prisma
 .kiro
-*.md
 PROJECT_STEPS.md
 pr-reviewer/
 .codebase-memory/
+combined_*
 
 # Logs
 logs
