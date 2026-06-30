@@ -53,24 +53,24 @@ export default function MarketingPage() {
     <div className="flex flex-col">
       {/* Hero */}
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-6 px-6 pt-24 pb-20 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl">
           Ship features from idea{" "}
           <span className="text-primary">to production</span>
         </h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
+        <p className="max-w-2xl text-lg text-muted-foreground text-pretty">
           AI-powered PRDs, automated task breakdown, intelligent code review,
           and human-gated releases — all in one platform.
         </p>
         <div className="flex items-center gap-3 pt-2">
           <Link
             href="/register"
-            className={buttonVariants({ size: "lg" })}
+            className={buttonVariants({ size: "lg", className: "active:scale-[0.96] transition-transform" })}
           >
             Get Started
           </Link>
           <Link
             href="/login"
-            className={buttonVariants({ variant: "outline", size: "lg" })}
+            className={buttonVariants({ variant: "outline", size: "lg", className: "active:scale-[0.96] transition-transform" })}
           >
             Sign In
           </Link>
@@ -79,7 +79,7 @@ export default function MarketingPage() {
 
       {/* Feature Highlights */}
       <section className="mx-auto w-full max-w-6xl px-6 py-20">
-        <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground">
+        <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground text-balance">
           Everything you need to ship
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -103,16 +103,16 @@ export default function MarketingPage() {
 
       {/* How it works */}
       <section className="mx-auto w-full max-w-3xl px-6 py-20">
-        <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground">
+        <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight text-foreground text-balance">
           How it works
         </h2>
         <ol className="relative space-y-6 border-l border-border/60 pl-8">
           {steps.map((step, index) => (
             <li key={step} className="relative">
-              <span className="absolute -left-11 flex size-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+              <span className="absolute -left-11 flex size-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground tabular-nums">
                 {index + 1}
               </span>
-              <p className="text-base text-foreground">{step}</p>
+              <p className="text-base text-foreground text-pretty">{step}</p>
             </li>
           ))}
         </ol>
@@ -120,15 +120,15 @@ export default function MarketingPage() {
 
       {/* Bottom CTA */}
       <section className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 px-6 py-20 text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground text-balance">
           Ready to ship?
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-pretty">
           Start building with AI-powered workflows today.
         </p>
         <Link
           href="/register"
-          className={buttonVariants({ size: "lg", className: "mt-2" })}
+          className={buttonVariants({ size: "lg", className: "mt-2 active:scale-[0.96] transition-transform" })}
         >
           Get Started Free
         </Link>
